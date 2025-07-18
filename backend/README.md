@@ -9,10 +9,13 @@ This directory contains a minimal Express + Prisma backend for the MentorLink pl
    ```bash
    npm install
    ```
-3. Generate Prisma client and run migrations (requires internet access):
+3. Generate Prisma client and run migrations (requires internet access).
+   If the Prisma CLI cannot be installed, you can execute the SQL
+   script in `prisma/migrations/001_init.sql` manually using `psql`:
    ```bash
    npx prisma generate
-   npx prisma migrate dev --name init
+   # or run manually
+   psql "$DATABASE_URL" -f prisma/migrations/001_init.sql
    ```
 4. Start the development server:
    ```bash
