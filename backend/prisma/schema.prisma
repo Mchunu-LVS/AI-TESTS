@@ -1,0 +1,117 @@
+// Prisma schema for MentorLink backend
+// Adjust database provider via env var DATABASE_URL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  passwordHash   String
+  userType       String
+  firstName      String
+  lastName       String
+  profilePhotoUrl String?  @map("profile_photo_url")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  mentorProfile  MentorProfile?
+  menteeProfile  MenteeProfile?
+  categories     UserCategory[]
+  sentMessages   Message[]   @relation("sent")
+  sessionsAsMentor Session[]  @relation("mentor")
+  sessionsAsMentee Session[]  @relation("mentee")
+}
+
+model MentorProfile {
+  userId          Int      @id @map("user_id")
+  company         String?
+  jobTitle        String?  @map("job_title")
+  yearsExperience Int?     @map("years_experience")
+  hourlyRate      Int?     @map("hourly_rate")
+  bio             String?
+  skills          String?
+  availabilitySchedule String? @map("availability_schedule")
+
+  user            User     @relation(fields: [userId], references: [id])
+}
+
+model MenteeProfile {
+  userId    Int    @id @map("user_id")
+  university String?
+  degree     String?
+  yearOfStudy Int?   @map("year_of_study")
+  goals       String?
+  bio         String?
+
+  user        User  @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  iconUrl     String? @map("icon_url")
+  users       UserCategory[]
+}
+
+model UserCategory {
+  userId     Int  @map("user_id")
+  categoryId Int  @map("category_id")
+  isPrimary  Boolean @default(false) @map("is_primary")
+
+  user       User     @relation(fields: [userId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([userId, categoryId])
+}
+
+model Session {
+  id             Int      @id @default(autoincrement())
+  mentorId       Int      @map("mentor_id")
+  menteeId       Int      @map("mentee_id")
+  scheduledAt    DateTime @map("scheduled_at")
+  durationMinutes Int     @map("duration_minutes")
+  status         String
+  totalAmount    Int?     @map("total_amount")
+  sessionGoals   String?  @map("session_goals")
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  mentor         User     @relation("mentor", fields: [mentorId], references: [id])
+  mentee         User     @relation("mentee", fields: [menteeId], references: [id])
+  messages       Message[]
+  payment        Payment?
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  sessionId Int      @map("session_id")
+  senderId  Int      @map("sender_id")
+  content   String
+  timestamp DateTime @default(now())
+  isRead    Boolean  @default(false) @map("is_read")
+
+  session   Session  @relation(fields: [sessionId], references: [id])
+  sender    User     @relation("sent", fields: [senderId], references: [id])
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  sessionId     Int      @map("session_id")
+  amount        Int
+  currency      String
+  paymentMethod String   @map("payment_method")
+  status        String
+  transactionId String?  @map("transaction_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  session       Session  @relation(fields: [sessionId], references: [id])
+}
+

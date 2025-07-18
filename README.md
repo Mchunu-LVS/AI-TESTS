@@ -236,3 +236,5 @@ Set up monitoring and logging
 
 Contributing
 This is the backend implementation for the MentorLink platform. The frontend UI components are being built with v0.dev based on the design specifications in the UI roadmap.
+
+For backend setup instructions see `backend/README.md`.
